@@ -1,4 +1,4 @@
-using CleanArch.Application.Services;
+﻿using CleanArch.Application.Services;
 using CleanArch.Domain.Repositories;
 using CleanArch.Infrastructure;
 using CleanArch.Infrastructure.Repositorios;
@@ -12,6 +12,26 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+/*
+ * 
+    +-------------------+
+    |      API Layer     |  --> Depende das camadas Application e Infrastructure
+    +-------------------+
+            
+    +-------------------+
+    |  Application Layer |  --> Depende da camada Domain
+    +-------------------+
+            
+    +-------------------+
+    | Infrastructure     |  --> Depende da camada Domain e Application
+    +-------------------+
+            
+    +-------------------+
+    |    Domain Layer    |  --> Não depende de nenhuma camada
+    +-------------------+
+ * 
+ */
 
 builder.Services.AddScoped<IAlunoService, AlunoService>();
 builder.Services.AddScoped<IProfessorService, ProfessorService>();

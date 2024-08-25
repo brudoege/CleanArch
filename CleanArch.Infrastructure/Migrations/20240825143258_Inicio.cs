@@ -68,15 +68,16 @@ namespace CleanArch.Infrastructure.Migrations
                 name: "Matricula",
                 columns: table => new
                 {
-                    IdAluno = table.Column<int>(type: "int", nullable: false),
-                    IdCurso = table.Column<int>(type: "int", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    StatusMatricula = table.Column<int>(type: "int", nullable: false)
+                    IdAluno = table.Column<int>(type: "int", nullable: false),
+                    IdCurso = table.Column<int>(type: "int", nullable: false),
+                    StatusMatricula = table.Column<int>(type: "int", nullable: false),
+                    DataMatricula = table.Column<DateTime>(type: "datetime", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Matricula", x => new { x.IdCurso, x.IdAluno });
+                    table.PrimaryKey("PK_Matricula", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Matricula_Aluno_IdAluno",
                         column: x => x.IdAluno,
@@ -100,6 +101,11 @@ namespace CleanArch.Infrastructure.Migrations
                 name: "IX_Matricula_IdAluno",
                 table: "Matricula",
                 column: "IdAluno");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Matricula_IdCurso",
+                table: "Matricula",
+                column: "IdCurso");
         }
 
         /// <inheritdoc />

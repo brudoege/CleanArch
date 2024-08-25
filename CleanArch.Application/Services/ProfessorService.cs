@@ -12,50 +12,72 @@ namespace CleanArch.Application.Services
         {
             _professorRepository = professorRepository;
         }
-
-        public async Task<int> Salvar(ProfessorViewModel professorViewModel)
+        public async Task<int> Incluir(ProfessorManipulacaoViewModel professorManipulacaoViewModel)
         {
-            if (professorViewModel == null)
+            if (professorManipulacaoViewModel == null)
             {
-                throw new ArgumentNullException(nameof(professorViewModel));
+                throw new ArgumentNullException(nameof(professorManipulacaoViewModel));
             }
 
-            var professor = professorViewModel.Id != null
-                ? await _professorRepository.SelecionarAsync(professorViewModel.Id.Value)
-                : null;
-
-            if (professor == null)
-            {
-                return await InserirProfessorAsync(professorViewModel);
-            }
-
-            return await AtualizarProfessorAsync(professor, professorViewModel);
+            return await IncluirProfessorAsync(professorManipulacaoViewModel);
         }
 
+        public async Task Alterar(Professor professorExiste, ProfessorManipulacaoViewModel professorManipulacaoViewModel)
+        {
+            if (professorManipulacaoViewModel == null)
+            {
+                throw new ArgumentNullException(nameof(professorManipulacaoViewModel));
+            }
+            if (professorExiste == null)
+            {
+                throw new ArgumentNullException(nameof(professorExiste));
+            }
 
-        private async Task<int> InserirProfessorAsync(ProfessorViewModel professorViewModel)
+            await AlterarProfessorAsync(professorExiste, professorManipulacaoViewModel);
+        }
+
+        public async Task<Professor?> SelecionarPorId(int idProfessor)
+        {
+            if (idProfessor == null)
+            {
+                throw new ArgumentNullException(nameof(idProfessor));
+            }
+
+            return await _professorRepository.SelecionarAsync(idProfessor);
+        }
+
+        public async Task<List<ProfessorViewModel?>?> ListarTodos()
+        {
+            var professors = await _professorRepository.SelecionarTudoAsync();
+
+            var professorViewModels = professors.Select(a => new ProfessorViewModel
+            {
+                Id = a.Id,
+                Nome = a.Nome,
+                Email = a.Email,
+            }).ToList();
+
+            return professorViewModels;
+        }
+
+        private async Task<int> IncluirProfessorAsync(ProfessorManipulacaoViewModel professorManipulacaoViewModel)
         {
             var professor = new Professor
             {
-                Nome = professorViewModel.Nome,
-                Email = professorViewModel.Email
+                Nome = professorManipulacaoViewModel.Nome,
+                Email = professorManipulacaoViewModel.Email,
             };
 
             await _professorRepository.IncluirAsync(professor);
-
-            // Retornar o Id do professor recém-inserido
             return professor.Id;
         }
 
-        private async Task<int> AtualizarProfessorAsync(Professor professor, ProfessorViewModel professorViewModel)
+        private async Task AlterarProfessorAsync(Professor professor, ProfessorManipulacaoViewModel professorManipulacaoViewModel)
         {
-            professor.Nome = professorViewModel.Nome;
-            professor.Email = professorViewModel.Email;
+            professor.Nome = professorManipulacaoViewModel.Nome;
+            professor.Email = professorManipulacaoViewModel.Email;
 
             await _professorRepository.AlterarAsync(professor);
-
-            // Retornar o Id do professor atualizado
-            return professor.Id;
         }
     }
 }

@@ -15,62 +15,122 @@ namespace CleanArch.Application.Services
             _professorRepository = professorRepository;
         }
 
-        public async Task<int> Salvar(CursoViewModel cursoViewModel)
+        public async Task<int> Incluir(CursoManipulacaoViewModel cursoManipulacaoViewModel)
         {
-            if (cursoViewModel == null)
+            if (cursoManipulacaoViewModel == null)
             {
-                throw new ArgumentNullException(nameof(cursoViewModel));
+                throw new ArgumentNullException(nameof(cursoManipulacaoViewModel));
             }
 
-            // Validação do IdProfessor
-            var professorExiste = await _professorRepository.SelecionarAsync(cursoViewModel.IdProfessor);
+            var professorExiste = await _professorRepository.SelecionarAsync(cursoManipulacaoViewModel.IdProfessor);
             if (professorExiste == null)
             {
                 throw new ArgumentException("O professor informado não existe.");
             }
 
-            var curso = cursoViewModel.Id != null
-                ? await _cursoRepository.SelecionarAsync(cursoViewModel.Id.Value)
-                : null;
-
-            if (curso == null)
-            {
-                return await InserirCursoAsync(cursoViewModel);
-            }
-
-            return await AtualizarCursoAsync(curso, cursoViewModel);
+            return await IncluirCursoAsync(cursoManipulacaoViewModel);
         }
 
+        public async Task Alterar(Curso cursoExiste, CursoManipulacaoViewModel cursoManipulacaoViewModel)
+        {
+            if (cursoManipulacaoViewModel == null)
+            {
+                throw new ArgumentNullException(nameof(cursoManipulacaoViewModel));
+            }
+            if (cursoExiste == null)
+            {
+                throw new ArgumentNullException(nameof(cursoExiste));
+            }
 
-        private async Task<int> InserirCursoAsync(CursoViewModel cursoViewModel)
+            if (!cursoExiste.Ativo)
+            {
+                throw new ArgumentException("O curso informado está inativo.");
+            }
+
+            var professorExiste = await _professorRepository.SelecionarAsync(cursoManipulacaoViewModel.IdProfessor);
+            if (professorExiste == null)
+            {
+                throw new ArgumentException("O professor informado não existe.");
+            }
+
+            await AlterarCursoAsync(cursoExiste, cursoManipulacaoViewModel);
+        }
+
+        public async Task Excluir(Curso cursoExiste)
+        {
+            if (cursoExiste == null)
+            {
+                throw new ArgumentNullException(nameof(cursoExiste));
+            }
+
+            if (!cursoExiste.Ativo)
+            {
+                throw new ArgumentException("O curso informado já está inativo.");
+            }
+
+            var cursoManipulacaoViewModel = new CursoManipulacaoViewModel
+            {
+                Titulo = cursoExiste.Titulo,
+                Descricao = cursoExiste.Descricao,
+                DataInicio = cursoExiste.DataInicio,
+                IdProfessor = cursoExiste.IdProfessor
+            };
+
+            cursoExiste.Ativo = false;
+            await AlterarCursoAsync(cursoExiste, cursoManipulacaoViewModel);
+        }
+
+        public async Task<Curso?> SelecionarPorId(int idCurso)
+        {
+            if (idCurso == null)
+            {
+                throw new ArgumentNullException(nameof(idCurso));
+            }
+
+            return await _cursoRepository.SelecionarAsync(idCurso);
+        }
+
+        public async Task<List<CursoViewModel?>?> ListarTodos()
+        {
+            var cursos = await _cursoRepository.SelecionarTudoComProfessorAsync();
+
+            var cursoViewModels = cursos.Select(a => new CursoViewModel
+            {
+                Id = a.Id,
+                Titulo = a.Titulo,
+                Descricao = a.Descricao,
+                DataInicio = a.DataInicio,
+                IdProfessor = a.IdProfessor,
+                ProfessorNome = a.Professor?.Nome,
+                Ativo = a.Ativo
+            }).ToList();
+
+            return cursoViewModels;
+        }
+
+        private async Task<int> IncluirCursoAsync(CursoManipulacaoViewModel cursoManipulacaoViewModel)
         {
             var curso = new Curso
             {
-                Titulo = cursoViewModel.Titulo,
-                Descricao = cursoViewModel.Descricao,
-                Ativo = true,
-                DataInicio = cursoViewModel.DataInicio,
-                IdProfessor = cursoViewModel.IdProfessor
+                Titulo = cursoManipulacaoViewModel.Titulo,
+                Descricao = cursoManipulacaoViewModel.Descricao,
+                DataInicio = cursoManipulacaoViewModel.DataInicio,
+                IdProfessor = cursoManipulacaoViewModel.IdProfessor,
+                Ativo = true
             };
 
             await _cursoRepository.IncluirAsync(curso);
-
-            // Retornar o Id do curso recém-inserido
             return curso.Id;
         }
 
-        private async Task<int> AtualizarCursoAsync(Curso curso, CursoViewModel cursoViewModel)
+        private async Task AlterarCursoAsync(Curso curso, CursoManipulacaoViewModel cursoManipulacaoViewModel)
         {
-            curso.Titulo = cursoViewModel.Titulo;
-            curso.Descricao = cursoViewModel.Descricao;
-            curso.Ativo = cursoViewModel.Ativo;
-            curso.DataInicio = cursoViewModel.DataInicio;
-            curso.IdProfessor = cursoViewModel.IdProfessor;
+            curso.Titulo = cursoManipulacaoViewModel.Titulo;
+            curso.Descricao = cursoManipulacaoViewModel.Descricao;
+            curso.DataInicio = cursoManipulacaoViewModel.DataInicio;
+            curso.IdProfessor = cursoManipulacaoViewModel.IdProfessor;
 
             await _cursoRepository.AlterarAsync(curso);
-
-            // Retornar o Id do curso atualizado
-            return curso.Id;
         }
     }
 }

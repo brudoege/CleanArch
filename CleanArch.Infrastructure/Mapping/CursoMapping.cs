@@ -27,9 +27,9 @@ namespace CleanArch.Infrastructure.Mappping
                .HasColumnType("datetime")
                .IsRequired();
 
-            builder.HasOne(t => t.Professor)
-                .WithMany(tp => tp.Cursos)
-                .HasForeignKey(i => i.IdProfessor);
+            builder.HasOne(x => x.Professor)
+                .WithMany(x => x.Cursos)
+                .HasForeignKey(x => x.IdProfessor);
         }
     }
 }

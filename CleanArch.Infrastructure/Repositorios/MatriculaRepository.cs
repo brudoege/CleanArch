@@ -10,13 +10,12 @@ namespace CleanArch.Infrastructure.Repositorios
         {                
         }
 
-        public List<Matricula> SelecionarTudoCompleto()
+        public async Task<List<Matricula>> SelecionarTudoComAlunoECursoAsync()
         {
-            return _contexto.Matricula
-                .Include(x => x.Aluno)
-                .Include(x => x.Curso)
-                //.ThenInclude(x => x.Professor)   // ThenInclude é usada, pois o Porfessor está referenciada na classe Curso
-                .ToList();
+            return await _contexto.Set<Matricula>()
+                .Include(m => m.Aluno)
+                .Include(m => m.Curso)
+                .ToListAsync();
         }
     }
 }

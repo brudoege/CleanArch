@@ -84,24 +84,29 @@ namespace CleanArch.Infrastructure.Migrations
 
             modelBuilder.Entity("CleanArch.Domain.Entitidades.Matricula", b =>
                 {
-                    b.Property<int>("IdCurso")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdAluno")
-                        .HasColumnType("int");
-
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("DataMatricula")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("IdAluno")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdCurso")
+                        .HasColumnType("int");
+
                     b.Property<int>("StatusMatricula")
                         .HasColumnType("int");
 
-                    b.HasKey("IdCurso", "IdAluno");
+                    b.HasKey("Id");
 
                     b.HasIndex("IdAluno");
+
+                    b.HasIndex("IdCurso");
 
                     b.ToTable("Matricula", (string)null);
                 });

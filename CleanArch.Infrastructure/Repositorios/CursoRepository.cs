@@ -16,5 +16,12 @@ namespace CleanArch.Infrastructure.Repositorios
                 .Include(c => c.Matriculas) // Carrega as matrículas associadas
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
+
+        public async Task<List<Curso>> SelecionarTudoComProfessorAsync()
+        {
+            return await _contexto.Set<Curso>()
+                .Include(c => c.Professor)
+                .ToListAsync();
+        }
     }
 }

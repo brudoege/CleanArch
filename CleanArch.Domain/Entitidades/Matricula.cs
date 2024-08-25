@@ -10,5 +10,6 @@ namespace CleanArch.Domain.Entitidades
         public int IdCurso { get; set; }
         public Curso Curso { get; set; }
         public StatusMatricula StatusMatricula { get; set; }
+        public DateTime DataMatricula { get; set; }
     }
 }

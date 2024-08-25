@@ -13,53 +13,105 @@ namespace CleanArch.Application.Services
             _alunoRepository = alunoRepository;
         }
 
-        public async Task<int> Salvar(AlunoViewModel alunoViewModel)
+        public async Task<int> Incluir(AlunoManipulacaoViewModel alunoManipulacaoViewModel)
         {
-            if (alunoViewModel == null)
+            if (alunoManipulacaoViewModel == null)
             {
-                throw new ArgumentNullException(nameof(alunoViewModel));
+                throw new ArgumentNullException(nameof(alunoManipulacaoViewModel));
             }
 
-            var aluno = alunoViewModel.Id != null
-                ? await _alunoRepository.SelecionarAsync(alunoViewModel.Id.Value)
-                : null;
-
-            if (aluno == null)
-            {
-                return await InserirAlunoAsync(alunoViewModel);
-            }
-
-            return await AtualizarAlunoAsync(aluno, alunoViewModel);
+            return await IncluirAlunoAsync(alunoManipulacaoViewModel);
         }
 
+        public async Task Alterar(Aluno alunoExiste, AlunoManipulacaoViewModel alunoManipulacaoViewModel)
+        {
+            if (alunoManipulacaoViewModel == null)
+            {
+                throw new ArgumentNullException(nameof(alunoManipulacaoViewModel));
+            }
+            if (alunoExiste == null)
+            {
+                throw new ArgumentNullException(nameof(alunoExiste));
+            }
 
-        private async Task<int> InserirAlunoAsync(AlunoViewModel alunoViewModel)
+            if (!alunoExiste.Ativo)
+            {
+                throw new ArgumentException("O aluno informado está inativo.");
+            }
+
+            await AlterarAlunoAsync(alunoExiste, alunoManipulacaoViewModel);
+        }
+
+        public async Task Excluir(Aluno alunoExiste)
+        {
+            if (alunoExiste == null)
+            {
+                throw new ArgumentNullException(nameof(alunoExiste));
+            }
+
+            if (!alunoExiste.Ativo)
+            {
+                throw new ArgumentException("O aluno informado já está inativo.");
+            }
+
+            var alunoManipulacaoViewModel = new AlunoManipulacaoViewModel
+            {
+                Nome = alunoExiste.Nome,
+                Email = alunoExiste.Email,
+                Endereco = alunoExiste.Endereco,
+            };
+
+            alunoExiste.Ativo = false;
+            await AlterarAlunoAsync(alunoExiste, alunoManipulacaoViewModel);
+        }
+
+        public async Task<Aluno?> SelecionarPorId(int idAluno)
+        {
+            if (idAluno == null)
+            {
+                throw new ArgumentNullException(nameof(idAluno));
+            }
+
+            return await _alunoRepository.SelecionarAsync(idAluno);
+        }
+
+        public async Task<List<AlunoViewModel?>?> ListarTodos()
+        {
+            var alunos = await _alunoRepository.SelecionarTudoAsync();
+
+            var alunoViewModels = alunos.Select(a => new AlunoViewModel
+            {
+                Id = a.Id,
+                Nome = a.Nome,
+                Email = a.Email,
+                Endereco = a.Endereco,
+                Ativo = a.Ativo
+            }).ToList();
+
+            return alunoViewModels;
+        }
+
+        private async Task<int> IncluirAlunoAsync(AlunoManipulacaoViewModel alunoManipulacaoViewModel)
         {
             var aluno = new Aluno
             {
-                Nome = alunoViewModel.Nome,
-                Endereco = alunoViewModel.Endereco,
-                Email = alunoViewModel.Email,
+                Nome = alunoManipulacaoViewModel.Nome,
+                Endereco = alunoManipulacaoViewModel.Endereco,
+                Email = alunoManipulacaoViewModel.Email,
                 Ativo = true
             };
 
             await _alunoRepository.IncluirAsync(aluno);
-
-            // Retornar o Id do aluno recém-inserido
             return aluno.Id;
         }
 
-        private async Task<int> AtualizarAlunoAsync(Aluno aluno, AlunoViewModel alunoViewModel)
+        private async Task AlterarAlunoAsync(Aluno aluno, AlunoManipulacaoViewModel alunoManipulacaoViewModel)
         {
-            aluno.Nome = alunoViewModel.Nome;
-            aluno.Endereco = alunoViewModel.Endereco;
-            aluno.Email = alunoViewModel.Email;
-            aluno.Ativo = alunoViewModel.Ativo;
+            aluno.Nome = alunoManipulacaoViewModel.Nome;
+            aluno.Endereco = alunoManipulacaoViewModel.Endereco;
+            aluno.Email = alunoManipulacaoViewModel.Email;
 
             await _alunoRepository.AlterarAsync(aluno);
-
-            // Retornar o Id do aluno atualizado
-            return aluno.Id;
         }
     }
 }

@@ -11,8 +11,8 @@ namespace CleanArch.Infrastructure.Mappping
         {
             builder.ToTable("Matricula");
 
-            builder.HasKey(x => new { x.IdCurso, x.IdAluno});
-
+            builder.HasKey(x => x.Id);
+            
             builder.HasOne(x => x.Curso)
                 .WithMany(x => x.Matriculas)
                 .HasForeignKey(x => x.IdCurso);
@@ -21,8 +21,9 @@ namespace CleanArch.Infrastructure.Mappping
                 .WithMany(x => x.Matriculas)
                 .HasForeignKey(x => x.IdAluno);
 
-            builder.Property(x => x.Id)
-                .UseIdentityColumn();
+            builder.Property(x => x.DataMatricula)
+               .HasColumnType("datetime")
+               .IsRequired();
         }
     }
 }
